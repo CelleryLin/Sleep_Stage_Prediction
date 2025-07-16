@@ -178,9 +178,6 @@ table_data_root/
 - **Label assignment:** Maps sleep stages to classification labels
 - **Data formatting:** Outputs in format compatible with ML frameworks
 
-**Methodology:**
-
-
 ## Execution Order
 
 **IMPORTANT:** The scripts must be run in the following order:
