@@ -25,7 +25,7 @@ Before running the preprocessing pipeline, ensure you have:
     - neurokit2
     - tqdm
 
-3. **Data directory structure** as specified in `_utils/file_paths.py`:
+3. **Data directory structure** as specified in `../file_paths.py`:
     ```
     data_root = 'path/to/ECG and Stage Data/'
     table_data_root = 'path/to/tabular Data/'
@@ -88,7 +88,7 @@ table_data_root/
 - Patient clinical data tables
 
 **Output:**
-- `patient_lut.csv` - A CSV file containing patient names and *relative* file paths. Its output path is specified by `patient_lut_file` in `_utils/file_paths.py`.
+- `patient_lut.csv` - A CSV file containing patient names and *relative* file paths. Its output path is specified by `patient_lut_file` in `../file_paths.py`.
 
 **What it does:**
 - Scans the data directory for ECG and stage files
@@ -187,20 +187,20 @@ table_data_root/
 
 ```bash
 # 1. Generate patient lookup table
-python data_processing/gen_patient_lut.py
+python src/gen_patient_lut.py
 
 # 2. Combine and align ECG/stage data  
-python data_processing/combine_stage_ecg.py
+python src/combine_stage_ecg.py
 
 # 3. Create windowed dataset for classification
-python data_processing/make_dataset.py
+python src/make_dataset.py
 ```
 
 ## Configuration
 
 Key configuration files:
 
-- `_utils/file_paths.py`: Data directory paths and output locations
+- `../file_paths.py`: Data directory paths and output locations
 
 ## Data Flow
 
