@@ -61,7 +61,7 @@ def get_bpm(ecg: np.ndarray, fs=128, method='neurokit'):
         return bpm
    
     except Exception as e:
-        return np.full_like(ecg[:,0], np.nan)
+        return None
 
 def combine_stage_ecg(ecg_path, stage_path, fs=128):
     """
@@ -87,7 +87,8 @@ def combine_stage_ecg(ecg_path, stage_path, fs=128):
         ecg = ecg[diff//2:-(diff-diff//2)]
 
     bpm = get_bpm(ecg, fs)
-    assert stage.shape[0] == ecg.shape[0] == bpm.shape[0], f'{ecg_path} and {stage_path} not aligned'
+    if bpm is not None:
+        assert stage.shape[0] == ecg.shape[0] == bpm.shape[0], f'{ecg_path} and {stage_path} not aligned'
 
     return ecg, bpm, stage
 
@@ -114,10 +115,6 @@ if __name__ == '__main__':
         ecg_path = row['ecg_filepath']
         stage_path = row['stage_filepath']
         table_filepath = row['table_filepath']
-
-        #### test
-        if name != '楊守仁':
-            continue
 
         if pd.isna(table_filepath):
             ahi = None
