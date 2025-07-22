@@ -61,7 +61,7 @@ def get_bpm(ecg: np.ndarray, fs=128, method='neurokit'):
         return bpm
    
     except Exception as e:
-        return np.full_like(ecg, np.nan)
+        return np.full_like(ecg[:,0], np.nan)
 
 def combine_stage_ecg(ecg_path, stage_path, fs=128):
     """
@@ -114,6 +114,10 @@ if __name__ == '__main__':
         ecg_path = row['ecg_filepath']
         stage_path = row['stage_filepath']
         table_filepath = row['table_filepath']
+
+        #### test
+        if name != '楊守仁':
+            continue
 
         if pd.isna(table_filepath):
             ahi = None
