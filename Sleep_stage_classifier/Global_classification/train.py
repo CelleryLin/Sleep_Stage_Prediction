@@ -16,7 +16,6 @@ from Dataset.GlobalECGDataset import GlobalECGDataset, custom_collate_fn
 from Model.resnet50 import ResNet50, UNet
 from _utils import (
     prepare_data_splits, 
-    create_model_path_dict, 
     FocalLoss, 
     plot_training_curves,
     save_model_and_info
@@ -46,7 +45,6 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     
     # Prepare data
     train_data_filenames, test_data_filenames = prepare_data_splits()
-    model_path_dict = create_model_path_dict()
     data_base_dir = file_paths.combined_data_folder
     
     print(f"Training files: {len(train_data_filenames)}")
@@ -56,7 +54,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     train_dataset = GlobalECGDataset(
         data_base_dir,
         train_data_filenames,
-        model_path_dict=model_path_dict,
+        model_path_dict=file_paths.model_path_dict,
         decision_th=decision_th,
         max_len=max_len
     )
@@ -64,7 +62,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     test_dataset = GlobalECGDataset(
         data_base_dir,
         test_data_filenames,
-        model_path_dict=model_path_dict,
+        model_path_dict=file_paths.model_path_dict,
         decision_th=decision_th,
         max_len=max_len
     )
@@ -101,10 +99,10 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     # Initialize model
     if model_type.lower() == 'resnet':  # for binary classification
         n_output_classes = 300
-        model = ResNet50(in_channels=len(model_path_dict), classes=n_output_classes).to(device)
+        model = ResNet50(in_channels=len(file_paths.model_path_dict), classes=n_output_classes).to(device)
     elif model_type.lower() == 'unet':
         n_output_classes = len(set(GlobalECGDataset.stage_code.values()))
-        model = UNet(n_channels=len(model_path_dict), n_classes=n_output_classes, bilinear=True).to(device)
+        model = UNet(n_channels=len(file_paths.model_path_dict), n_classes=n_output_classes, bilinear=True).to(device)
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
     

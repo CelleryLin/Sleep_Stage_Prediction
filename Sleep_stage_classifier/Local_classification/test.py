@@ -16,7 +16,7 @@ from Dataset.ECGDataset import ECGDataset
 from Dataset.load_data import load_data
 from Models.model import ConvTran
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import file_paths
 
 def classification_report(y_true, y_pred, mode='macro'):
@@ -255,8 +255,8 @@ def test_model(model_path, config, data_path, threshold=0.5,
 
 if __name__ == "__main__":
     
-    convtran_output_root = file_paths.convtran_output_root + '20250723130353/'
-    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_010000_pos/'
+    convtran_output_root = file_paths.convtran_output_root + '20250723171908_nnn100/'
+    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_nnn100_pos/'
 
     # load training configuration from training_info.npz
     training_info_path = os.path.join(convtran_output_root, 'training_info.npz')

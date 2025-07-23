@@ -3,13 +3,12 @@ import copy
 import numpy as np
 
 class TreeNode:
-    def __init__(self, classifier_index: int = None, positive=None, negative=None, class_label=None, class_label_friendly_name=None, clf=None):
+    def __init__(self, classifier_index: int = None, positive=None, negative=None, class_label=None, class_label_friendly_name=None):
         self.classifier_index = classifier_index  # Index in the input encoding list
         self.positive = positive                  # TreeNode or class label
         self.negative = negative                  # TreeNode or class label
         self.class_label = class_label            # Final classification result if it's a leaf
         self.class_label_friendly_name = class_label_friendly_name
-        self.clf = clf                            # Classifier used at this node
 
         self.true_n_classes = None
 
@@ -18,14 +17,12 @@ class TreeNode:
     
     def __call__(self, x: np.ndarray):
         """
-        Classify input x using the decision tree.
-        x: 1D numpy array of shape (n_classes,)
+        x: 1D numpy contains only 0 or 1 for each classifier, shape: (n_clf,)
         """
         if self.is_leaf():
             return self.class_label
         
-        pred = self.clf.predict(x)
-        if pred > 0.5:
+        if x[self.classifier_index]:
             return self.positive(x)
         else:
             return self.negative(x)
@@ -43,7 +40,7 @@ class TreeNode:
         return f'Node(clf_{self.classifier_index}, +->{self.positive}, -->{self.negative})'
 
 
-def build_decision_tree(encoding_list: List[str], class_labels: List[str]) -> TreeNode:
+def build_decoder_tree(encoding_list: List[str], class_labels: List[str]) -> TreeNode:
     n_classes = len(encoding_list[0])
     true_n_classes = n_classes
 
@@ -90,8 +87,7 @@ def build_decision_tree(encoding_list: List[str], class_labels: List[str]) -> Tr
         print(f"Warning: No valid split found for classes {possible_classes} with encodings {available_clfs}")
         return TreeNode(
             class_label=true_n_classes,
-            class_label_friendly_name=",".join([class_labels[c] for c in possible_classes]),
-            clf=None
+            class_label_friendly_name=",".join([str(class_labels[c]) for c in possible_classes]),
         )
 
     all_classes = list(range(n_classes))
@@ -99,20 +95,6 @@ def build_decision_tree(encoding_list: List[str], class_labels: List[str]) -> Tr
     tree = recurse(all_classes, indexed_encodings)
     tree.true_n_classes = true_n_classes
     return tree
-
-class PseudoClassifier:
-    def __init__(self, encoding: str):
-        self.encoding = encoding
-
-    def predict(self, x: np.ndarray) -> float:
-        """
-        Predict based on the encoding.
-        x: 1D numpy array of shape (n_classes,)
-        """
-        if len(x) != len(self.encoding):
-            raise ValueError(f"Input length {len(x)} does not match encoding length {len(self.encoding)}")
-        
-        return float(np.mean([x[i] for i, v in enumerate(self.encoding) if v == '1']))
 
 if __name__ == "__main__":
     # Assume 5 classes: A=0, B=1, C=2, D=3, E=4
@@ -125,5 +107,5 @@ if __name__ == "__main__":
 
     class_names = ['A', 'B', 'C', 'D', 'E']
 
-    tree = build_decision_tree(encoding_list, class_names)
+    tree = build_decoder_tree(encoding_list, class_names)
     print(tree)

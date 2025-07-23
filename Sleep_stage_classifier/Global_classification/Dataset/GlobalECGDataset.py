@@ -5,10 +5,10 @@ from tqdm import tqdm
 from torch.utils.data import Dataset
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
-from Local_classifacation.ConvTran.Models.model import ConvTran
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from Local_classification.Models.model import ConvTran
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from stage_code_cvt import stage_code_global
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

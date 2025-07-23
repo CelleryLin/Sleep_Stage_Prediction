@@ -30,19 +30,6 @@ def prepare_data_splits():
     
     return train_data_filenames, test_data_filenames
 
-def create_model_path_dict():
-    """Create dictionary of model paths for different classification tasks."""
-    convtran_output_root = file_paths.convtran_output_root
-    
-    model_path_dict = {
-        '010000': os.path.join(convtran_output_root, '20250723130353_010000/'),
-        # '111000': os.path.join(convtran_output_root, '20241221165750_111000/'), 
-        # '1n0000': os.path.join(convtran_output_root, '20241231114404_1n0nnn/'),
-        # 'nnn100': os.path.join(convtran_output_root, '20241231090821_nnn100/'),
-    }
-    
-    return model_path_dict
-
 def decoder_4ch(x):
     """
     Decode the 4-channel input to sleep stage classes.

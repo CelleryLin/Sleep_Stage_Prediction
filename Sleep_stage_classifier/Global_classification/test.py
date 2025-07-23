@@ -18,8 +18,6 @@ from Dataset.GlobalECGDataset import GlobalECGDataset, custom_collate_fn
 from Model.resnet50 import ResNet50, UNet
 from _utils import (
     prepare_data_splits,
-    create_model_path_dict,
-    X_decoder,
     plot_confusion_matrix,
     visualize_predictions,
     load_model,
@@ -29,7 +27,12 @@ from _utils import (
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 import file_paths
+from EnsembledDecoder import build_decoder_tree
 
+decoder = build_decoder_tree(
+    encoding_list=list(file_paths.model_path_dict.keys()),
+    class_labels=[0,1,2,3,4,4],
+)
 
 def evaluate_model(model, data_loader, loss_module, device, n_output_classes, dataset_name="Test"):
     """Evaluate model on given dataset."""
@@ -61,12 +64,10 @@ def evaluate_model(model, data_loader, loss_module, device, n_output_classes, da
             pred_classes = np.argmax(pred.cpu().numpy(), axis=1)
 
             # Get pre-transformer predictions (from input X)
-            pred_org = (X >= 0.5).float()
-            # pred_org_classes = X_decoder(pred_org.cpu().numpy())
-            # pred_org_classes = pred_org.cpu().numpy().argmax(axis=2)
-            pred_org_classes = X_bin.cpu().numpy().squeeze(axis=2)
+            X_bin_reshape = X_bin.cpu().numpy().reshape(-1, X_bin.shape[-1])
+            pred_org_classes = [decoder(X_bin_reshape[i]) for i in range(X_bin_reshape.shape[0])]
 
-            all_pred_org.extend(pred_org_classes.reshape(-1))
+            all_pred_org.extend(pred_org_classes)
             all_pred.extend(pred_classes.reshape(-1))
             all_Y.extend(Y_classes.reshape(-1))
 
@@ -133,8 +134,7 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
         batch_size = training_info['batch_size']
 
     # Determine number of input channels from model path dict
-    model_path_dict = create_model_path_dict()
-    n_input_channels = len(model_path_dict)
+    n_input_channels = len(file_paths.model_path_dict)
     
     # Load model using utility function with correct parameters
     model = load_model(model_path, model_type, 
@@ -144,14 +144,13 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
     
     # Prepare data
     train_data_filenames, test_data_filenames = prepare_data_splits()
-    model_path_dict = create_model_path_dict()
     data_base_dir = file_paths.combined_data_folder
 
     # Create datasets with same configuration as training
     train_dataset = GlobalECGDataset(
         data_base_dir,
         train_data_filenames,
-        model_path_dict=model_path_dict,
+        model_path_dict=file_paths.model_path_dict,
         decision_th=decision_th,
         max_len=max_len
     )
@@ -159,7 +158,7 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
     test_dataset = GlobalECGDataset(
         data_base_dir,
         test_data_filenames,
-        model_path_dict=model_path_dict,
+        model_path_dict=file_paths.model_path_dict,
         decision_th=decision_th,
         max_len=max_len
     )
@@ -241,8 +240,8 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
         Y_pred_sample = test_pred[:len(Y.reshape(-1))].reshape(Y.shape)
         Y_true_sample = test_labels[:len(Y.reshape(-1))].reshape(Y.shape)
         
-        visualize_predictions(X, Y_true_sample, Y_pred_sample, sample_idx=0,
-                            save_path=f"{output_dir}/sample_prediction.png" if output_dir else None)
+        # visualize_predictions(X, Y_true_sample, Y_pred_sample, sample_idx=0,
+        #                     save_path=f"{output_dir}/sample_prediction.png" if output_dir else None)
         break
     
     # Save results
@@ -291,7 +290,7 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
 
 if __name__ == "__main__":
     # Testing parameters - now only need model path, everything else loaded from training_info
-    model_path = 'G:/Cellery/merry_submit/Sleep_stage_classifier/Global_classifacation/Resnet/output/20250723131113/model.pth'
+    model_path = 'G:/Cellery/merry_submit/Sleep_stage_classifier/Global_classification/output/20250723215321/model.pth'
     output_dir = './test_results'
 
     if not os.path.exists(output_dir):

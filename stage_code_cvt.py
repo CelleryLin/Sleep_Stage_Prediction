@@ -2,7 +2,6 @@
 This file control the transformation of the stage code from original combined data to the dataset for the classification task.
 """
 
-
 # stage_code = {
 #     '0': 1, # wake
 #     '1': -1, # REM
@@ -13,10 +12,10 @@ This file control the transformation of the stage code from original combined da
 # }
 
 stage_code = {
-    '11': 1, # wake
-    '12': 1, # REM
-    '13': 1, # N1
-    '14': 0, # N2
+    '11': -1, # wake
+    '12': -1, # REM
+    '13': -1, # N1
+    '14': 1, # N2
     '15': 0, # N3
     '16': 0, # N4
 }
@@ -24,10 +23,10 @@ stage_code = {
 stage_code_global = {
     '11': 0, # wake
     '12': 1, # REM
-    '13': 0, # N1
-    '14': 0, # N2
-    '15': 0, # N3
-    '16': 0, # N4
+    '13': 2, # N1
+    '14': 3, # N2
+    '15': 4, # N3
+    '16': 4, # N4
 }
 
 def _code_to_str(code_dict):

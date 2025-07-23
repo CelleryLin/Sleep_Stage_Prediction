@@ -17,7 +17,7 @@ from Dataset.load_data import load_data
 from Models.model import ConvTran
 from Models.optimizers import RAdam
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import file_paths
 
 class FocalLoss(torch.nn.Module):
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     }
     
     # Training parameters
-    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_111000_pos/'
+    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_nnn100_pos/'
 
     
     # Train the model
