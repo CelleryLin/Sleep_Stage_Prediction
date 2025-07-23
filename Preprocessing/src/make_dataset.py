@@ -1,5 +1,5 @@
 """
-make dataset for classification task
+make dataset for local classification task
 
 input:
     raw npy (stage and ecg)
@@ -11,6 +11,7 @@ input:
         },
         'scalar_features': {
             'AHI': ahi,
+            'quality': quality, # 0~1
         },
         'data': {
             'ECG': ecg,
@@ -62,7 +63,7 @@ output_root = file_paths.clf_dataset_root + f'ECG_Rate_{stage_code_str}_{"pos" i
 
 # check data_root exists and has npzs
 if not os.path.exists(data_root):
-    raise FileNotFoundError(f'Data root not found: {data_root}, have you run combine_stage_ecg.py yet?')
+    raise FileNotFoundError(f'Data root not found: {data_root}, have you run data_collecting.py yet?')
 else:
     npz_files = [f for f in os.listdir(data_root) if f.endswith('.npz')]
     if not npz_files:
@@ -76,7 +77,10 @@ else:
         sys.exit(0)
 
 if __name__ == '__main__':
+
+    # print stage code info
     stage_code_cvt.info(stage_code)
+    print("Record position:", record_pos)
 
     fs=1 # do not modify.
     epoch_len = 30 #s, do not modify.
@@ -86,6 +90,15 @@ if __name__ == '__main__':
             continue
         data = np.load(data_root + file, allow_pickle=True)
         data_dict = data['data'].item()
+        scalar_features = data['scalar_features'].item()
+
+        if data_dict['BPM'] is None or data_dict['STAGE'] is None:
+            continue
+
+        # drop unacceptable
+        if scalar_features['quality'] == 'Unacceptable':
+            continue
+
         time_series = np.array(data_dict['BPM'])[::128]
         stage = np.array(data_dict['STAGE'][:, 0])[::128]
 

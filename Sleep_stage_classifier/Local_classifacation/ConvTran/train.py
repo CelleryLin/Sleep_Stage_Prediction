@@ -18,8 +18,21 @@ from Models.model import ConvTran
 from Models.optimizers import RAdam
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
-from stage_code_cvt import stage_code
 import file_paths
+
+class FocalLoss(torch.nn.Module):
+    """Focal Loss implementation for handling class imbalance."""
+    
+    def __init__(self, gamma=1.5, alpha=0.3):
+        super(FocalLoss, self).__init__()
+        self.gamma = gamma
+        self.alpha = alpha
+
+    def forward(self, input, target):
+        pt = target * input + (1 - target) * (1 - input)
+        ce = -torch.log(pt)
+        loss = self.alpha * (1 - pt) ** self.gamma * ce
+        return loss.mean()
 
 
 def l2_reg_loss(model):
@@ -66,7 +79,7 @@ def train_model(config, data_path, epochs=50, batch_size=512,
     print(f"Class distribution - 1s: {np.sum(y_train == 1)}, 0s: {np.sum(y_train == 0)}")
 
     # Create datasets and dataloaders
-    train_dataset = ECGDataset(X_train, y_train, transform=False)
+    train_dataset = ECGDataset(X_train, y_train, transform=True)
     test_dataset = ECGDataset(X_test, y_test, transform=False)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -77,6 +90,7 @@ def train_model(config, data_path, epochs=50, batch_size=512,
     
     # Loss and optimizer
     loss_module = torch.nn.BCELoss()
+    # loss_module = FocalLoss()
     optimizer = RAdam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     
     # Training loop
@@ -184,15 +198,15 @@ if __name__ == "__main__":
     }
     
     # Training parameters
-    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_010000_pos/'
+    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_111000_pos/'
 
     
     # Train the model
     model, training_info = train_model(
         config=config,
         data_path=data_path,
-        epochs=20,
-        batch_size=1024,
+        epochs=25,
+        batch_size=512,
         learning_rate=5e-3,
         weight_decay=1e-5,
         use_cache=True

@@ -6,6 +6,7 @@ def load_data(
     data_path, 
     patient_lut,
     data_cache_folder, 
+    drop_unacceptable=True,
     use_cache=True
 ):
     cache_file_name = 'data.npz'

@@ -1,11 +1,11 @@
 import os
 import sys
-import numpy as np
 import torch
 from torch import nn
 
-from Models.AbsolutePositionalEncoding import tAPE, AbsolutePositionalEncoding, LearnablePositionalEncoding
-from Models.Attention import Attention, Attention_Rel_Scl, Attention_Rel_Vec
+sys.path.append(os.path.dirname(__file__))
+from AbsolutePositionalEncoding import tAPE, AbsolutePositionalEncoding, LearnablePositionalEncoding
+from Attention import Attention, Attention_Rel_Scl, Attention_Rel_Vec
 
 
 def count_parameters(model):

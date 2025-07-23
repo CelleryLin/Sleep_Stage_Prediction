@@ -98,9 +98,9 @@ table_data_root/
 
 ---
 
-### Step 2: Combine Stage and ECG Data
+### Step 2: Collect Stage and ECG Data
 
-**Run script:** `combine_stage_ecg.py`
+**Run script:** `data_collecting.py`
 
 **Purpose:** Aligns ECG signals with sleep stage annotations and extracts heart rate features.
 
@@ -120,6 +120,7 @@ table_data_root/
         },
         'scalar_features': {
             'AHI': ahi_value,
+            'quality': quality_value, # 0~1
         },
         'data': {
             'ECG': ecg_signal,      # Aligned ECG data
@@ -189,8 +190,8 @@ table_data_root/
 # 1. Generate patient lookup table
 python src/gen_patient_lut.py
 
-# 2. Combine and align ECG/stage data  
-python src/combine_stage_ecg.py
+# 2. Combine and align ECG/stage data
+python src/data_collecting.py
 
 # 3. Create windowed dataset for classification
 python src/make_dataset.py
@@ -211,7 +212,7 @@ config:
   theme: neutral
 ---
 flowchart TD
-    A["Raw ECG/STAGE Files &lt;*.mat&gt;"] --> B["gen_patient_lut.py"] & D["combine_stage_ecg.py"]
+    A["Raw ECG/STAGE Files &lt;*.mat&gt;"] --> B["gen_patient_lut.py"] & D["data_collecting.py"]
     B --> C["patient_lut.csv"]
     C --> D
     D --> E["combined data &lt;*.npz&gt;"]
