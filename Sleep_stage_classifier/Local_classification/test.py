@@ -255,11 +255,10 @@ def test_model(model_path, config, data_path, threshold=0.5,
 
 if __name__ == "__main__":
     
-    convtran_output_root = file_paths.convtran_output_root + '20250723171908_nnn100/'
-    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_nnn100_pos/'
+    model_root = file_paths.convtran_output_root + '20250723171908_nnn100/'
 
     # load training configuration from training_info.npz
-    training_info_path = os.path.join(convtran_output_root, 'training_info.npz')
+    training_info_path = os.path.join(model_root, 'training_info.npz')
     if os.path.exists(training_info_path):
         training_info = np.load(training_info_path, allow_pickle=True)
         config = training_info['config'].item()
@@ -272,12 +271,12 @@ if __name__ == "__main__":
     
     # Test the model
     results = test_model(
-        model_path=convtran_output_root + 'model.pth',
+        model_path=model_root + 'model.pth',
         config=config,
-        data_path=data_path,
+        data_path=file_paths.local_clf_data_path,
         threshold=0.5,
         save_results=True,
-        output_dir=convtran_output_root
+        output_dir=model_root
     )
     
     print("\n" + "="*50)

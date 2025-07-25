@@ -184,7 +184,6 @@ def plot_training_curves(training_info):
     plt.show()
 
 if __name__ == "__main__":
-    # Model configuration
     config = {
         'max_len': 150,
         'channel_size': 2,
@@ -196,15 +195,11 @@ if __name__ == "__main__":
         'Rel_pos_encode': 'eRPE',
         'dropout': 0.01,
     }
-    
-    # Training parameters
-    data_path = 'F:/Cellery/merry/data/label_window/ECG_Rate_nnn100_pos/'
 
-    
     # Train the model
     model, training_info = train_model(
         config=config,
-        data_path=data_path,
+        data_path=file_paths.local_clf_data_path,
         epochs=25,
         batch_size=512,
         learning_rate=5e-3,

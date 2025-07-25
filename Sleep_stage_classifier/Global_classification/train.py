@@ -26,7 +26,7 @@ import file_paths
 
 
 def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-4, 
-                decision_th=0.5, max_len=200, val_split=0.2):
+                max_len=200, val_split=0.2):
     """
     Train the ResNet/UNet global classification model.
     
@@ -55,16 +55,16 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
         data_base_dir,
         train_data_filenames,
         model_path_dict=file_paths.model_path_dict,
-        decision_th=decision_th,
-        max_len=max_len
+        max_len=max_len,
+        ds='train'
     )
 
     test_dataset = GlobalECGDataset(
         data_base_dir,
         test_data_filenames,
         model_path_dict=file_paths.model_path_dict,
-        decision_th=decision_th,
-        max_len=max_len
+        max_len=max_len,
+        ds='test'
     )
 
     # Split training data for validation
@@ -178,7 +178,6 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
         'epochs': epochs,
         'batch_size': batch_size,
         'learning_rate': learning_rate,
-        'decision_th': decision_th,
         'max_len': max_len,
         'n_output_classes': n_output_classes,
         'val_split': val_split,
@@ -197,10 +196,9 @@ if __name__ == "__main__":
     # Training parameters
     model, training_info = train_model(
         model_type='unet',  # 'resnet' or 'unet'
-        epochs=500,
-        batch_size=512,
+        epochs=50,
+        batch_size=1024,
         learning_rate=1e-4,
-        decision_th=0.5,
         max_len=200,
         val_split=0.2
     )

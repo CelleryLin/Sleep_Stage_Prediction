@@ -1,4 +1,4 @@
-# Sleep Stage Classification Training
+# Training Sleep Stage Classification
 
 This directory contains the training scripts and models for sleep stage classification using ECG data. The classification system contains 2 stages: Local and Global classification, each with its own model architecture and training process.
 
@@ -18,13 +18,9 @@ Before running the classification models, ensure you have:
     pip install -r requirements.txt
     ```
 
-3. **Data directory structure** as specified in `../file_paths.py`
-
 ## System Architecture
 
 ### Local Classification
-
-**Run training script:** `train.py`
 
 **Purpose:** Create a binary "weak classifier" to classify sleep stages on a local level (epoch nearby).
 
@@ -48,8 +44,6 @@ Local_classification/
 ```
 
 ### Global Classification
-
-**Run training script:** `train.py`
 
 **Purpose:** Classify entire sleep records using a larger view of the data.
 
@@ -111,11 +105,12 @@ The procedure is as follows:
     }
     ```
 2. Specify the `convtran_output_root` in `file_paths.py` to locate the output directory for the  local classification models.
-3. After generating the datasets, update the `data_path` in `train.py`. Run this script to train each local classifier. The output model will be saved in the `output/` directory with a timestamp.
-4. Ensure `test.py` has the same `data_path` as `train.py`, Specify the desired model you have trained. **You have to test local classifiers before training global classifier.**
+3. After generating the datasets, update the `local_clf_data_path` in `file_paths.py`. Run this script to train each local classifier. The output model will be saved in the `output/` directory with a timestamp.
+4. Specify the desired model you have trained in `test.py`. **You have to test local classifiers before training global classifier.**
     ```python
-    convtran_output_root = file_paths.convtran_output_root + '{desired model folder}/'
+    model_root = file_paths.convtran_output_root + '{desired model folder}/'
     ```
+5. Repeat steps 1-4 for each of the 4 local classifiers, ensuring the `stage_code` is set appropriately for each task.
 
 ### 3. Global Classification Training
 After training the local classifiers, you can train the global classifier

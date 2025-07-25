@@ -41,7 +41,7 @@ class TreeNode:
 
 
 def build_decoder_tree(encoding_list: List[str], class_labels: List[str]) -> TreeNode:
-    n_classes = len(encoding_list[0])
+    n_classes = len(set(class_labels))
     true_n_classes = n_classes
 
     # Each node will try to split remaining possible classes

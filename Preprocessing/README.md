@@ -15,15 +15,6 @@ Before running the preprocessing pipeline, ensure you have:
     ```bash
     pip install -r requirements.txt
     ```
-    
-    Key dependencies include:
-    - numpy
-    - scipy
-    - pandas
-    - matplotlib
-    - biosppy
-    - neurokit2
-    - tqdm
 
 3. **Data directory structure** as specified in `../file_paths.py`:
     ```
@@ -94,7 +85,7 @@ table_data_root/
 - Scans the data directory for ECG and stage files
 - Matches patient files across different data sources (2007-2009, CPAP/NOCPAP)
 - Creates a unified lookup table for all available patients
-- Specified train/test split
+- Specified random train/test split for each patient.
 
 ---
 
@@ -120,7 +111,7 @@ table_data_root/
         },
         'scalar_features': {
             'AHI': ahi_value,
-            'quality': quality_value, # 0~1
+            'quality': quality_value, # Unacceptable, Barely acceptable, Excellent
         },
         'data': {
             'ECG': ecg_signal,      # Aligned ECG data
@@ -138,7 +129,7 @@ table_data_root/
 - **Feature extraction:** Includes clinical features like AHI(Apnea-Hypopnea Index)
 
 **Technical Details:**
-- ECG sampling rate: 128 Hz
+- Original ECG sampling rate: 128 Hz
 - Stage epoch duration: 30 seconds
 - Stage upsampling: Each 30s epoch → 3840 samples (128 Hz × 30s)
 - Alignment method: Center alignment with zero-padding/trimming
@@ -159,8 +150,8 @@ table_data_root/
 - Format: `label feature1 feature2 feature3 ...`
 
 **Configurations:**
-- `m`: number of windows (must be odd)
-- `record_pos`: Whether to include the *relative position* of each window within the entire signal as a feature.
+- `m`: number of windows (must be odd), default is 5
+- `record_pos`: Whether to include the *relative position* of each window within the entire signal as a feature, default is True
 - `stage_code` (defined in `../stage_code_cvt.py`): Specifies how sleep stages should be mapped to target classes. For example, to classify REM v.s. NREM, set stage_code as follows:
     ```python
     stage_code = {
@@ -174,14 +165,15 @@ table_data_root/
     ```
 
 **What it does:**
+- **Quality filtering:** Removes patients with low quality data
 - **Downsampling:** down sampling ECG rate (bpm) to fs=1
 - **Windowing:** Creates overlapping windows from continuous signals
 - **Label assignment:** Maps sleep stages to classification labels
 - **Data formatting:** Outputs in format compatible with ML frameworks
 
-## Execution Order
 
-**IMPORTANT:** The scripts must be run in the following order:
+### IMPORTANT! 
+The scripts must be run in the following order:
 
 ```bash
 # 1. Generate patient lookup table
@@ -193,12 +185,6 @@ python src/data_collecting.py
 # 3. Create windowed dataset for classification
 python src/make_dataset.py
 ```
-
-## Configuration
-
-Key configuration files:
-
-- `../file_paths.py`: Data directory paths and output locations
 
 ## Data Flow
 

@@ -125,7 +125,6 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
     
     # Extract configuration from training info
     model_type = training_info['model_type']
-    decision_th = training_info['decision_th']
     max_len = training_info['max_len']
     n_output_classes = training_info['n_output_classes']
     
@@ -151,7 +150,6 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
         data_base_dir,
         train_data_filenames,
         model_path_dict=file_paths.model_path_dict,
-        decision_th=decision_th,
         max_len=max_len
     )
 
@@ -159,8 +157,8 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
         data_base_dir,
         test_data_filenames,
         model_path_dict=file_paths.model_path_dict,
-        decision_th=decision_th,
-        max_len=max_len
+        max_len=max_len,
+        ds='test'
     )
 
     print(f"Dataset loaded:")
@@ -253,7 +251,6 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
             'training_info_path': training_info_path,
             'training_config': training_info,
             'model_type': model_type,
-            'decision_th': decision_th,
             'max_len': max_len,
             'n_output_classes': n_output_classes,
             'batch_size': batch_size,
@@ -290,7 +287,7 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
 
 if __name__ == "__main__":
     # Testing parameters - now only need model path, everything else loaded from training_info
-    model_path = 'G:/Cellery/merry_submit/Sleep_stage_classifier/Global_classification/output/20250723215321/model.pth'
+    model_path = 'G:/Cellery/merry_submit/Sleep_stage_classifier/Global_classification/output/20250724172221/model.pth'
     output_dir = './test_results'
 
     if not os.path.exists(output_dir):
@@ -300,7 +297,7 @@ if __name__ == "__main__":
     results = test_model(
         model_path=model_path,
         training_info_path=None,  # Auto-inferred from model_path
-        batch_size=512,
+        batch_size=4096,
         save_results=True,
         output_dir=output_dir
     )

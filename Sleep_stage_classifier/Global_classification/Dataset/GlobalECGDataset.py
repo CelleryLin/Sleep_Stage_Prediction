@@ -17,29 +17,55 @@ class GlobalECGDataset(Dataset):
 
     stage_code = stage_code_global
 
-    def __init__(self, data_base_dir, filename_list, model_path_dict, m=5, fs=1, epoch_len=30, max_len=2000, decision_th=0.5):
+    def __init__(self, data_base_dir, filename_list, model_path_dict, m=5, fs=1, epoch_len=30, max_len=2000, ds='train'):
 
         self.m = m
         self.fs = fs
         self.epoch_len = epoch_len
         self.max_len = max_len
 
-        all_time_series, all_stages = self.load_data(data_base_dir, filename_list)
-
         self.models, self.training_infos, self.test_resultses = \
             self.load_model(model_path_dict)
-        self.decision_th = decision_th
+        
+        # Create a cache filename based on the input parameters
+        cache_dir = './cache'
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        cache_filename = os.path.join(cache_dir, f"global_ds_{ds}.npz")
+        
+        # Try to load from cache first
+        if os.path.exists(cache_filename):
+            print(f"Loading from cache: {cache_filename}")
+            cache_data = np.load(cache_filename, allow_pickle=True)
+            self.stage_pred = cache_data['stage_pred']
+            self.stage_pred_proba = cache_data['stage_pred_proba']
+            self.gt = cache_data['gt']
+        else:
+            print(f"Cache not found. Processing data...")
+            all_time_series, all_stages = self.load_data(data_base_dir, filename_list)
+            
+            epoc = [self.get_epoch(s) for s in all_time_series]
+            self.stage_pred = [s[0] for s in epoc]
+            self.stage_pred_proba = [s[1] for s in epoc]
+            self.gt = [s[::30] for s in all_stages]
 
-        epoc = [self.get_epoch(s) for s in all_time_series]
-        self.stage_pred = [s[0] for s in epoc]
-        self.stage_pred_proba = [s[1] for s in epoc]
-        self.gt = [s[::30] for s in all_stages]
+            # windowing
+            self.stage_pred = self.windowing(self.stage_pred, self.max_len)
+            self.stage_pred_proba = self.windowing(self.stage_pred_proba, self.max_len)
+            self.gt = self.windowing(self.gt, self.max_len)
 
-        self.stage_pred_proba = [s for s in self.stage_pred_proba if len(s) >= self.max_len]
-        self.stage_pred = [s for s in self.stage_pred if len(s) >= self.max_len]
-        self.gt = [s for s in self.gt if len(s) >= self.max_len]
-
-        print(len(self.stage_pred))
+            self.stage_pred_proba = [s for s in self.stage_pred_proba if len(s) >= self.max_len]
+            self.stage_pred = [s for s in self.stage_pred if len(s) >= self.max_len]
+            self.gt = [s for s in self.gt if len(s) >= self.max_len]
+            
+            # Save to cache
+            print(f"Saving to cache: {cache_filename}")
+            np.savez(
+            cache_filename, 
+            stage_pred=self.stage_pred, 
+            stage_pred_proba=self.stage_pred_proba, 
+            gt=self.gt
+            )
 
 
     def __len__(self):
@@ -51,11 +77,37 @@ class GlobalECGDataset(Dataset):
         gt = np.array(self.gt[idx])
 
         # padding to max_len
-        stage_pred_proba, mask, start = GlobalECGDataset.randcrop(stage_pred_proba, self.max_len)
-        stage_pred, _, _ = GlobalECGDataset.randcrop(stage_pred, self.max_len, start=start)
-        gt, _, _ = GlobalECGDataset.randcrop(gt, self.max_len, start=start)
+        # stage_pred_proba, mask, start = GlobalECGDataset.randcrop(stage_pred_proba, self.max_len)
+        # stage_pred, _, _ = GlobalECGDataset.randcrop(stage_pred, self.max_len, start=start)
+        # gt, _, _ = GlobalECGDataset.randcrop(gt, self.max_len, start=start)
 
-        return stage_pred_proba, stage_pred, gt, mask
+        return stage_pred_proba, stage_pred, gt, None
+    
+    def windowing(self, time_series, max_len):
+        """
+        Windowing the time series to max_len
+        s: list cantains of all time series
+        """
+        all_window = []
+        for s in time_series:
+            window_num = len(s) - max_len + 1
+            if window_num <= 0:
+                continue
+
+            windowed = np.zeros((window_num, max_len))
+
+            # Precompute the indices for the windows
+            window_indices = np.arange(window_num)
+            window_slices = np.array([np.arange(i, i + max_len) for i in window_indices])
+
+            # Extract the ECG windows using advanced indexing
+            windows = s[window_slices]
+
+            all_window.extend(windows)
+        
+        return all_window
+
+        
     
 
     def get_epoch(self, time_series):
@@ -200,6 +252,6 @@ def custom_collate_fn(batch):
     stage_preds_proba = torch.FloatTensor(np.stack(stage_preds_proba))
     stage_preds = torch.FloatTensor(np.stack(stage_preds))
     gts = torch.FloatTensor(np.stack(gts))
-    masks = torch.FloatTensor(np.stack(masks))
+    # masks = torch.FloatTensor(np.stack(masks))
 
-    return stage_preds_proba, stage_preds, gts, masks
+    return stage_preds_proba, stage_preds, gts, torch.ones_like(gts)
