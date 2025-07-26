@@ -99,10 +99,10 @@ def build_decoder_tree(encoding_list: List[str], class_labels: List[str]) -> Tre
 if __name__ == "__main__":
     # Assume 5 classes: A=0, B=1, C=2, D=3, E=4
     encoding_list = [
-        '11100',  # clf_1: A/B/C vs D/E
         '01000',  # clf_0: B vs others
-        # '1n0nn',  # clf_2: A vs C
-        # 'nnn10',  # clf_3: D vs E
+        '11100',  # clf_1: A/B/C vs D/E
+        '1n000',  # clf_2: A vs C
+        '00010',  # clf_3: D vs E
     ]
 
     class_names = ['A', 'B', 'C', 'D', 'E']

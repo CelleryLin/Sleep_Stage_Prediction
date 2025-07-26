@@ -255,7 +255,7 @@ def test_model(model_path, config, data_path, threshold=0.5,
 
 if __name__ == "__main__":
     
-    model_root = file_paths.convtran_output_root + '20250723171908_nnn100/'
+    model_root = file_paths.local_output_root + '20250726112253_000100/'
 
     # load training configuration from training_info.npz
     training_info_path = os.path.join(model_root, 'training_info.npz')
@@ -273,7 +273,7 @@ if __name__ == "__main__":
     results = test_model(
         model_path=model_root + 'model.pth',
         config=config,
-        data_path=file_paths.local_clf_data_path,
+        data_path=file_paths.local_clf_ds_path,
         threshold=0.5,
         save_results=True,
         output_dir=model_root

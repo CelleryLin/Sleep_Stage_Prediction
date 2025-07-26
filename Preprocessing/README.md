@@ -1,10 +1,10 @@
 # Data Preprocessing Pipeline
 
-This directory contains the complete data preprocessing pipeline for sleep stage classification from ECG rate (bpm) and stage data. The pipeline consists of three main steps that must be executed in order.
+This directory contains the complete data preprocessing pipeline for sleep stage classification from ECG rate signals (bpm). The pipeline consists of three main steps that must be executed in order.
 
 ## Overview
 
-The preprocessing pipeline transforms raw ECG and sleep stage data into a format suitable for machine learning classification tasks. It aligns ECG rate (bpm) signals with sleep stage annotations and creates windowed datasets for training.
+The preprocessing pipeline transforms raw ECG and sleep stage data into a format suitable for machine learning classification tasks. It aligns ECG rate signals (bpm) with sleep stage annotations and creates windowed datasets for training the local and global classifiers.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ Before running the preprocessing pipeline, ensure you have:
     pip install -r requirements.txt
     ```
 
-3. **Data directory structure** as specified in `../file_paths.py`:
+3. **Data directory structure** as specified in `_utils/file_paths.py`:
     ```
     data_root = 'path/to/ECG and Stage Data/'
     table_data_root = 'path/to/tabular Data/'
@@ -128,8 +128,8 @@ table_data_root/
 - **Data alignment:** Center aligning BPM/ECG and STAGE data.
 - **Feature extraction:** Includes clinical features like AHI(Apnea-Hypopnea Index)
 
-**Technical Details:**
-- Original ECG sampling rate: 128 Hz
+**Technical DetailOriginal s:**
+- ECG sampling rate: 128 Hz
 - Stage epoch duration: 30 seconds
 - Stage upsampling: Each 30s epoch → 3840 samples (128 Hz × 30s)
 - Alignment method: Center alignment with zero-padding/trimming
@@ -146,12 +146,10 @@ table_data_root/
 - Combined .npz files from Step 2
 
 **Output:**
-- Windowed dataset files (TSV format) with features and labels
+- Windowed ECG rate-level dataset files (TSV format) with features and labels
 - Format: `label feature1 feature2 feature3 ...`
 
-**Configurations:**
-- `m`: number of windows (must be odd), default is 5
-- `record_pos`: Whether to include the *relative position* of each window within the entire signal as a feature, default is True
+**Configurati- `m`: number of windows (must be odd), default is 5 b- `record_pos`: Whether to include the *relative position* of each window within the entire signal as a feature, default is Truefeature.
 - `stage_code` (defined in `../stage_code_cvt.py`): Specifies how sleep stages should be mapped to target classes. For example, to classify REM v.s. NREM, set stage_code as follows:
     ```python
     stage_code = {
@@ -209,5 +207,8 @@ flowchart TD
     H@{ shape: text}
     style B fill:#FFF9C4
     style D fill:#FFF9C4
+    style F fill:#FFF9C4
+```
+le D fill:#FFF9C4
     style F fill:#FFF9C4
 ```

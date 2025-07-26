@@ -14,15 +14,16 @@ from tqdm import tqdm
 
 from Dataset.GlobalECGDataset import GlobalECGDataset, custom_collate_fn
 from Model.resnet50 import ResNet50, UNet
-from _utils import (
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from _utils.global_clf_utils import (
     prepare_data_splits, 
     FocalLoss, 
     plot_training_curves,
     save_model_and_info
 )
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 import file_paths
+from stage_code_cvt import stage_code_global
 
 
 def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-4, 
@@ -101,7 +102,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
         n_output_classes = 300
         model = ResNet50(in_channels=len(file_paths.model_path_dict), classes=n_output_classes).to(device)
     elif model_type.lower() == 'unet':
-        n_output_classes = len(set(GlobalECGDataset.stage_code.values()))
+        n_output_classes = len(set(stage_code_global.values()))
         model = UNet(n_channels=len(file_paths.model_path_dict), n_classes=n_output_classes, bilinear=True).to(device)
     else:
         raise ValueError(f"Unsupported model type: {model_type}")

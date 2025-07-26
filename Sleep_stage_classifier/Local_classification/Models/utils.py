@@ -67,6 +67,10 @@ class SaveBestModel:
             save_model(path, epoch, model, optimizer)
 
 
+# Import a specialized version of load_model for this specific use case
+# Note: We'll keep the original function since it has different parameters than our centralized version
+# If this function is used in many places, consider updating the centralized version to handle this case
+
 def load_model(model, model_path, optimizer=None, resume=False, change_output=False,
                lr=None, lr_step=None, lr_factor=None):
     start_epoch = 0

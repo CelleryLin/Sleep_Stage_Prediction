@@ -62,7 +62,7 @@ def train_model(config, data_path, epochs=50, batch_size=512,
     
     # Load data
     data_cache_folder = './cache/'
-    convtran_output_root = file_paths.convtran_output_root
+    local_output_root = file_paths.local_output_root
     
 
     patient_lut = pd.read_csv(file_paths.patient_lut_file)
@@ -141,7 +141,7 @@ def train_model(config, data_path, epochs=50, batch_size=512,
 
     # Save model
     curr = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    output_dir = convtran_output_root + curr
+    output_dir = local_output_root + curr
     os.makedirs(output_dir, exist_ok=True)
     model_path = f'{output_dir}/model.pth'
     torch.save(model.state_dict(), model_path)
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     # Train the model
     model, training_info = train_model(
         config=config,
-        data_path=file_paths.local_clf_data_path,
+        data_path=file_paths.local_clf_ds_path,
         epochs=25,
         batch_size=512,
         learning_rate=5e-3,
@@ -207,5 +207,5 @@ if __name__ == "__main__":
         use_cache=True
     )
     
-    print(f"Training completed. Model saved in: {file_paths.convtran_output_root}")
+    print(f"Training completed. Model saved in: {file_paths.local_output_root}")
     plot_training_curves(training_info)

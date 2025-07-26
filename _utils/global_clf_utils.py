@@ -12,7 +12,7 @@ import torch
 from sklearn.metrics import confusion_matrix, matthews_corrcoef
 
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import file_paths
 
 
@@ -176,40 +176,6 @@ def save_model_and_info(model, training_info, output_dir=None):
     print(f'Training info saved to {info_path}')
     
     return model_path, info_path
-
-def load_model(model_path, model_type='unet', n_channels=4, n_classes=5, device=None):
-    """
-    Load a trained model from checkpoint.
-    
-    Args:
-        model_path: Path to the saved model
-        model_type: Type of model ('resnet' or 'unet')
-        n_channels: Number of input channels
-        n_classes: Number of output classes
-        device: Device to load the model on
-    
-    Returns:
-        Loaded PyTorch model
-    """
-    if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    # Import models here to avoid circular imports
-    from Model.resnet50 import ResNet50, UNet
-    
-    # Initialize model
-    if model_type.lower() == 'resnet':
-        model = ResNet50(in_channels=n_channels, classes=300).to(device)
-    elif model_type.lower() == 'unet':
-        model = UNet(n_channels=n_channels, n_classes=n_classes, bilinear=True).to(device)
-    else:
-        raise ValueError(f"Unsupported model type: {model_type}")
-    
-    # Load weights
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    print(f"Model loaded from: {model_path}")
-    
-    return model
 
 def calculate_metrics(y_true, y_pred):
     """

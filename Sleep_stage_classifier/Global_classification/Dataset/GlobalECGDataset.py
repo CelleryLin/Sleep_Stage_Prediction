@@ -1,21 +1,15 @@
 import os
 import sys
 import torch
-from tqdm import tqdm
 from torch.utils.data import Dataset
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from Local_classification.Models.model import ConvTran
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
-from stage_code_cvt import stage_code_global
+from _utils.model_utils import load_local_model, load_data
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class GlobalECGDataset(Dataset):
-
-    stage_code = stage_code_global
 
     def __init__(self, data_base_dir, filename_list, model_path_dict, m=5, fs=1, epoch_len=30, max_len=2000, ds='train'):
 
@@ -42,7 +36,7 @@ class GlobalECGDataset(Dataset):
             self.gt = cache_data['gt']
         else:
             print(f"Cache not found. Processing data...")
-            all_time_series, all_stages = self.load_data(data_base_dir, filename_list)
+            all_time_series, all_stages = load_data(data_base_dir, filename_list)
             
             epoc = [self.get_epoch(s) for s in all_time_series]
             self.stage_pred = [s[0] for s in epoc]
@@ -61,10 +55,10 @@ class GlobalECGDataset(Dataset):
             # Save to cache
             print(f"Saving to cache: {cache_filename}")
             np.savez(
-            cache_filename, 
-            stage_pred=self.stage_pred, 
-            stage_pred_proba=self.stage_pred_proba, 
-            gt=self.gt
+                cache_filename, 
+                stage_pred=self.stage_pred, 
+                stage_pred_proba=self.stage_pred_proba, 
+                gt=self.gt
             )
 
 
@@ -75,11 +69,6 @@ class GlobalECGDataset(Dataset):
         stage_pred_proba = np.array(self.stage_pred_proba[idx])
         stage_pred = np.array(self.stage_pred[idx])
         gt = np.array(self.gt[idx])
-
-        # padding to max_len
-        # stage_pred_proba, mask, start = GlobalECGDataset.randcrop(stage_pred_proba, self.max_len)
-        # stage_pred, _, _ = GlobalECGDataset.randcrop(stage_pred, self.max_len, start=start)
-        # gt, _, _ = GlobalECGDataset.randcrop(gt, self.max_len, start=start)
 
         return stage_pred_proba, stage_pred, gt, None
     
@@ -107,8 +96,6 @@ class GlobalECGDataset(Dataset):
         
         return all_window
 
-        
-    
 
     def get_epoch(self, time_series):
         full_epochs_num = time_series.shape[0] // self.fs // self.epoch_len
@@ -154,28 +141,6 @@ class GlobalECGDataset(Dataset):
         pred = np.array(pred)
         pred_proba = np.array(pred_proba)
         return pred, pred_proba
-
-    @staticmethod
-    def load_data(data_base_dir, filename_list):
-        all_time_series = []
-        all_stages = []
-        for file in tqdm(filename_list):
-            data = np.load(data_base_dir + file, allow_pickle=True)
-            data_dict = data['data'].item()
-
-            if data_dict['BPM'] is None or data_dict['STAGE'] is None:
-                continue
-
-            time_series = np.array(data_dict['BPM'])[::128] # transform to 1 beat per sec
-            stage = np.array(data_dict['STAGE'][:, 0])[::128]
-
-            # encode stage
-            stage = np.vectorize(GlobalECGDataset.stage_code.get)(stage.astype(str))
-
-            all_time_series.append(time_series)
-            all_stages.append(stage)
-
-        return all_time_series, all_stages
     
     @staticmethod
     def padding(s, max_len):
@@ -194,52 +159,8 @@ class GlobalECGDataset(Dataset):
         return padded, mask
     
     @staticmethod
-    def randcrop(s, max_len, start=None):
-        """
-        Randomly crop the time series to max_len
-        s: 1D time series
-        """
-        s = np.array(s)
-        if len(s) <= max_len:
-            raise ValueError("Time series is shorter than max_len")
-        
-        if start is None:
-            start = np.random.randint(0, len(s) - max_len)
-
-        return s[start:start+max_len], np.ones(max_len), start
-    
-    @staticmethod
     def load_model(model_path_dict):
-        """
-        4 models need to be loaded:
-        1. REM - NREM (010000)
-        2. Wake, REM, N1 - N2, N3 (111000)
-        3. Wake - N1 (1n0nnn)
-        4. N2 - N3 (nnn100)
-        model_path_dict: dict, must contain ['010000', '111000', '1n0nnn', 'nnn100']
-        """
-
-        models = {}
-        training_infos = {}
-        test_resultses = {}
-        for k, v in model_path_dict.items():
-
-            if not os.path.exists(v):
-                raise ValueError(f"Model path {v} does not exist")
-            
-            training_info_path = os.path.join(v, 'training_info.npz')
-            test_results_path = os.path.join(v, 'test_results.npz')
-            training_info = np.load(training_info_path, allow_pickle=True)
-            test_results = np.load(test_results_path, allow_pickle=True)
-            config = training_info['config'].item()
-
-            models[k] = ConvTran(config, num_classes=1).to(device)
-            models[k].load_state_dict(torch.load(v+'model.pth'))
-            models[k].to(device)
-            training_infos[k] = training_info
-            test_resultses[k] = test_results
-
-        return models, training_infos, test_resultses
+        return load_local_model(model_path_dict)
 
 def custom_collate_fn(batch):
     """

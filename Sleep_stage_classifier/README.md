@@ -5,8 +5,8 @@ This directory contains the training scripts and models for sleep stage classifi
 ## Overview
 
 The Sleep Stage Classification system uses processed ECG rate (BPM) data to predict sleep stages. It contains two main components:
-1. **Local Classification**: A binary "weak classifier" to classify sleep stages by bpm series of nearby epochs.
-2. **Global Classification**: Combines outputs from local classifiers, use their outputs to "ensure" the stage of epochs.
+1. **Local Classification**: A binary "weak classifier" to classify sleep stages by analyzing **ECG rate-level** signals of nearby epochs.
+2. **Global Classification**: Processes **stage-level** sequences by analyzing the outputs from local classifiers to "ensure" consistent sleep stage predictions across the entire sleep session.
 
 ## Prerequisites
 
@@ -22,10 +22,10 @@ Before running the classification models, ensure you have:
 
 ### Local Classification
 
-**Purpose:** Create a binary "weak classifier" to classify sleep stages on a local level (epoch nearby).
+**Purpose:** Create a binary "weak classifier" to classify sleep stages by observing ECG rate-level signals at a nearby epochs.
 
 **Model Input:**
-- $X \in \mathbb{R}^{2 \times L}$: Input BPM ([0,:]) and its 1st difference ([1,:]). $L$ is the series length. For example, if we observe 5 epochs at a time, $L = 5 \times 30(s) \times 1(hz) = 150$.
+- $X \in \mathbb{R}^{2 \times L}$: Input ECG rate ([0,:]) and its 1st difference ([1,:]). $L$ is the series length. For example, if we observe 5 epochs at a time, $L = 5 \times 30(s) \times 1(hz) = 150$.
 - This script loads the preprocessed (*.tsv files) and will generate $X$ automatically. See `Dataset/ECGDataset.py`.
 
 **Model Output:**
@@ -45,11 +45,11 @@ Local_classification/
 
 ### Global Classification
 
-**Purpose:** Classify entire sleep records using a larger view of the data.
+**Purpose:** Classify entire sleep records by analyzing stage-level sequences derived from local classifiers.
 
 **Model Input:**
-- $X \in \mathbb{R}^{M \times N}$: a series of the output of the Local classification models, where $M$ is the number of local windows and $N$ is the number of classifier.
-- This script loads the original *.npz file, get predictions from local classifiers, generate $X$ for global model. See `Dataset/GlobalECGDataset.py`.
+- $X \in \mathbb{R}^{M \times N}$: Stage sequences from the outputs from the Local classification models, where $M$ is the number of epochs in the sequence and $N$ is the number of local classifiers.
+- This script loads the original *.npz file, get predictions from local classifiers that process ECG rate-level signals, and generates $X$ for the global model. See `Dataset/GlobalECGDataset.py`.
 
 **Model Output:**
 - $Y \in [0, 1]^{M \times C}$: Output probabilities for each class (Wake, REM, NREM stages). $C$ is the number of classes. Tipically, $C=N+1$.
@@ -104,11 +104,11 @@ The procedure is as follows:
         '16': 0, # N4
     }
     ```
-2. Specify the `convtran_output_root` in `file_paths.py` to locate the output directory for the  local classification models.
-3. After generating the datasets, update the `local_clf_data_path` in `file_paths.py`. Run this script to train each local classifier. The output model will be saved in the `output/` directory with a timestamp.
+2. Specify the `local_output_root` in `file_paths.py` to locate the output directory for the  local classification models.
+3. After generating the datasets, update the `local_clf_ds_path` in `file_paths.py`. Run this script to train each local classifier. The output model will be saved in the `output/` directory with a timestamp.
 4. Specify the desired model you have trained in `test.py`. **You have to test local classifiers before training global classifier.**
     ```python
-    model_root = file_paths.convtran_output_root + '{desired model folder}/'
+    model_root = file_paths.local_output_root + '{desired model folder}/'
     ```
 5. Repeat steps 1-4 for each of the 4 local classifiers, ensuring the `stage_code` is set appropriately for each task.
 

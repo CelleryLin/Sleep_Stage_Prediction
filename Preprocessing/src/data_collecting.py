@@ -35,9 +35,11 @@ import scipy.io as sio
 from tqdm import tqdm
 import neurokit2 as nk
 import pandas as pd
-from _utils.PatientTableData import PatientTableData
+import multiprocessing as mp
+from functools import partial
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from _utils.PatientTableData import PatientTableData
 import file_paths
 
 def get_bpm(ecg: np.ndarray, fs=128, method='neurokit'):
@@ -169,9 +171,7 @@ def process_patient(row, data_root, output_root, patient_table_data):
     return output_path
 
 if __name__ == '__main__':
-    import multiprocessing as mp
-    from functools import partial
-    
+
     data_root = file_paths.data_root
     output_root = file_paths.combined_data_folder
     table_data_root = file_paths.table_data_root
