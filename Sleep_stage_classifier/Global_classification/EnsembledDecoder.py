@@ -101,8 +101,8 @@ if __name__ == "__main__":
     encoding_list = [
         '01000',  # clf_0: B vs others
         '11100',  # clf_1: A/B/C vs D/E
-        '1n000',  # clf_2: A vs C
-        '00010',  # clf_3: D vs E
+        '1n0nn',  # clf_2: A vs C
+        'nnn10',  # clf_3: D vs E
     ]
 
     class_names = ['A', 'B', 'C', 'D', 'E']

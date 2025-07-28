@@ -4,27 +4,16 @@ import numpy as np
 import torch
 import pandas as pd
 import matplotlib.pyplot as plt
-from Inference_pipeline.src.pipeline import Pipeline
+from pipeline import Pipeline
 from tqdm import tqdm
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
-from Sleep_stage_classifier.Local_classification.Models.model import ConvTran
-from Sleep_stage_classifier.Global_classification.Model.resnet50 import ResNet50, UNet
-from stage_code_cvt import stage_code_global
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 import file_paths
+from stage_code_cvt import stage_code_global
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# load data
-# Import the function from centralized utilities
 from _utils.model_utils import load_data
- 
-# load local model
-# Import the function from centralized utilities
 from _utils.model_utils import load_local_model
-
-# load global model
-# Import the function from centralized utilities
 from _utils.model_utils import load_global_model
 
 if __name__ == '__main__':
@@ -78,3 +67,30 @@ if __name__ == '__main__':
     pred = np.concatenate(pipeline.majority_pred)
     print(matthews_corrcoef(gt, pred))
     print(confusion_matrix(gt, pred))
+
+    # plot cm
+    cm = confusion_matrix(gt, pred)
+    # Plot confusion matrix
+    plt.figure(figsize=(8, 6))
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix')
+    plt.colorbar()
+
+    # Add labels and values to the plot
+    tick_marks = np.arange(len(np.unique(gt)))
+    plt.xticks(tick_marks, np.unique(gt))
+    plt.yticks(tick_marks, np.unique(gt))
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+
+    # Add text annotations in the cells
+    thresh = cm.max() / 2
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            plt.text(j, i, format(cm[i, j], 'd'),
+                     horizontalalignment="center",
+                     color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.savefig('G:/Cellery/merry/Combine_local_and_global/image/confusion_matrix.jpg')
+    plt.show()

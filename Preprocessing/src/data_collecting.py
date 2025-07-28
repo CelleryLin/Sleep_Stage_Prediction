@@ -73,7 +73,7 @@ def get_bpm(ecg: np.ndarray, fs=128, method='neurokit'):
             info, sampling_rate=fs, desired_length=len(ecg_cleaned)
         )
 
-        # Calculate quality (0~1)
+        # Calculate quality
         quality = nk.ecg.ecg_quality(ecg_cleaned, rpeaks=info["ECG_R_Peaks"], sampling_rate=fs, method='zhao2018')
 
         return bpm, quality

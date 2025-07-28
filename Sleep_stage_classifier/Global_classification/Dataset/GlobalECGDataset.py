@@ -19,7 +19,7 @@ class GlobalECGDataset(Dataset):
         self.max_len = max_len
 
         self.models, self.training_infos, self.test_resultses = \
-            self.load_model(model_path_dict)
+            load_local_model(model_path_dict)
         
         # Create a cache filename based on the input parameters
         cache_dir = './cache'
@@ -157,10 +157,6 @@ class GlobalECGDataset(Dataset):
         mask[:len(s)] = 1
 
         return padded, mask
-    
-    @staticmethod
-    def load_model(model_path_dict):
-        return load_local_model(model_path_dict)
 
 def custom_collate_fn(batch):
     """

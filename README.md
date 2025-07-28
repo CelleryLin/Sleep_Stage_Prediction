@@ -14,7 +14,7 @@ The system classifies sleep into five stages:
 - N3/N4 (Deep Sleep)
 
 Our approach leverages the correlation between heart rate variability and sleep stages, using a hierarchical classification system that combines:
-1. **Local Classification**: Analyzes short, windowed **ECG rate-level** signal, with sampling rate of 150, to make initial predictions.
+1. **Local Classification**: Analyzes short, windowed **ECG rate-level** signal, with sampling rate of 128, to make initial predictions.
 2. **Global Classification**: Considers the broader stage-level sequence, with sampling rate of 1/30, across the entire sleep session to refine predictions.
 
 ## Methodology
@@ -46,8 +46,32 @@ The hierarchical approach allows the system to:
 3. Leverage specialized binary classifiers for challenging distinctions
 4. Integrate predictions through a global model
 
-![Model Architecture]
-<!-- Insert model architecture diagram here -->
+```mermaid
+---
+config:
+  layout: elk
+  theme: default
+  look: classic
+---
+flowchart TB
+    n1["Local clf $$\quad B_0$$"] -- "stage-level seq." --> n5["Global clf $$\quad B_{g}$$"]
+    n2["Local clf $$\quad B_1$$"] -- "stage-level seq." --> n5
+    n3["Local clf $$\quad B_2$$"] -- "stage-level seq." --> n5
+    n4["Local clf $$\quad B_3$$"] -- "stage-level seq." --> n5
+    n6["Signal Preprocessor"] -- ECG rate-level sig. --> n1 & n2 & n3 & n4
+    n7["ECG Rate (BPM)"] --> n6
+    n5 --> n8["**Predict Stage**"]
+    n1@{ shape: trap-b}
+    n5@{ shape: trap-b}
+    n2@{ shape: trap-b}
+    n3@{ shape: trap-b}
+    n4@{ shape: trap-b}
+    n6@{ shape: div-proc}
+    n7@{ shape: text}
+    n8@{ shape: rect}
+    style n8 fill:#FFF9C4
+
+```
 
 ## Usage
 
@@ -66,3 +90,7 @@ For detailed instructions on each component, please refer to the README files in
 ## Results
 
 <!-- Insert your results here, including performance metrics, visualizations, etc. -->
+
+## Future Work
+- Cross validation are not applied in this project, our results may lose some robustness.
+- We are not going to deploy these models. For cross platform deployment, we recommend using ONNX or TensorFlow Lite.

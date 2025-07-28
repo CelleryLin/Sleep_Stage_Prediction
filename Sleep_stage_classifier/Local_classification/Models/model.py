@@ -1,3 +1,8 @@
+"""
+This code includes implementations adapted from ConvTran:
+https://github.com/Navidfoumani/ConvTran
+"""
+
 import os
 import sys
 import torch

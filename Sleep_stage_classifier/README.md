@@ -22,7 +22,7 @@ Before running the classification models, ensure you have:
 
 ### Local Classification
 
-**Purpose:** Create a binary "weak classifier" to classify sleep stages by observing ECG rate-level signals at a nearby epochs.
+**Purpose:** Create a binary "weak classifier" to identify sleep stages by observing ECG rate-level signals at a nearby epochs.
 
 **Model Input:**
 - $X \in \mathbb{R}^{2 \times L}$: Input ECG rate ([0,:]) and its 1st difference ([1,:]). $L$ is the series length. For example, if we observe 5 epochs at a time, $L = 5 \times 30(s) \times 1(hz) = 150$.
@@ -48,11 +48,11 @@ Local_classification/
 **Purpose:** Classify entire sleep records by analyzing stage-level sequences derived from local classifiers.
 
 **Model Input:**
-- $X \in \mathbb{R}^{M \times N}$: Stage sequences from the outputs from the Local classification models, where $M$ is the number of epochs in the sequence and $N$ is the number of local classifiers.
+- $X \in \mathbb{R}^{K \times M}$: Stage sequences from the outputs from the Local classification models, where $K$ is the number of epochs in the sequence and $M$ is the number of local classifiers.
 - This script loads the original *.npz file, get predictions from local classifiers that process ECG rate-level signals, and generates $X$ for the global model. See `Dataset/GlobalECGDataset.py`.
 
 **Model Output:**
-- $Y \in [0, 1]^{M \times C}$: Output probabilities for each class (Wake, REM, NREM stages). $C$ is the number of classes. Tipically, $C=N+1$.
+- $Y \in [0, 1]^{M \times C}$: Output probabilities for each class (Wake, REM, NREM stages). $C$ is the number of classes. Typically, $C=N+1$.
 
 **Directory Structure:**
 ```

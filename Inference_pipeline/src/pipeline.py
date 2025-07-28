@@ -6,9 +6,6 @@ from torch import nn
 from scipy import stats
 from tqdm import tqdm
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from Sleep_stage_classifier.Local_classification.Dataset.ECGDataset import ECGDataset as LocaDataset #dataset for local model
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class Pipeline():
     """

@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # Training parameters
     model, training_info = train_model(
         model_type='unet',  # 'resnet' or 'unet'
-        epochs=50,
+        epochs=30,
         batch_size=1024,
         learning_rate=1e-4,
         max_len=200,

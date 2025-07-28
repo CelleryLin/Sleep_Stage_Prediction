@@ -20,6 +20,5 @@ model_path_dict = {
     '010000': local_output_root + '20250723130353_010000/',
     '111000': local_output_root + '20250723143930_111000/', 
     '1n0000': local_output_root + '20250723162924_1n0nnn/',
-    # 'nnn100': local_output_root + '20250723171908_nnn100/',
-    '000100': local_output_root + '20250726112253_000100/',
+    'nnn100': local_output_root + '20250723171908_nnn100/',
 }

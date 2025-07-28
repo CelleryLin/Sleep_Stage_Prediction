@@ -16,11 +16,13 @@ from sklearn.metrics import confusion_matrix, matthews_corrcoef
 sys.path.append(os.path.dirname(__file__))
 from Dataset.GlobalECGDataset import GlobalECGDataset, custom_collate_fn
 from Model.resnet50 import ResNet50, UNet
-from _utils import (
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from _utils.model_utils import load_global_model
+from _utils.global_clf_utils import (
     prepare_data_splits,
     plot_confusion_matrix,
     visualize_predictions,
-    load_model,
     calculate_metrics,
     print_metrics_summary
 )
@@ -96,13 +98,12 @@ def load_training_info(info_path):
     return training_info
 
 
-def test_model(model_path, training_info_path=None, batch_size=None, save_results=True, output_dir=None):
+def test_model(model_dir, training_info_path=None, batch_size=None, save_results=True, output_dir=None):
     """
     Test the trained ResNet/UNet global classification model using training configuration.
     
     Args:
         model_path: Path to the saved model
-        training_info_path: Path to training_info.npz file (if None, inferred from model_path)
         batch_size: Batch size for evaluation (if None, uses training batch size)
         save_results: Whether to save results
         output_dir: Directory to save results
@@ -111,11 +112,7 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    # Load training configuration
-    if training_info_path is None:
-        # Infer training info path from model path
-        model_dir = os.path.dirname(model_path)
-        training_info_path = os.path.join(model_dir, 'training_info.npz')
+    training_info_path = os.path.join(model_dir, 'training_info.npz')
     
     if not os.path.exists(training_info_path):
         raise FileNotFoundError(f"Training info file not found: {training_info_path}")
@@ -123,23 +120,15 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
     print(f"Loading training configuration from: {training_info_path}")
     training_info = load_training_info(training_info_path)
     
-    # Extract configuration from training info
-    model_type = training_info['model_type']
     max_len = training_info['max_len']
     n_output_classes = training_info['n_output_classes']
     
     # Use provided batch size or fall back to training batch size
     if batch_size is None:
         batch_size = training_info['batch_size']
-
-    # Determine number of input channels from model path dict
-    n_input_channels = len(file_paths.model_path_dict)
     
     # Load model using utility function with correct parameters
-    model = load_model(model_path, model_type, 
-                      n_channels=n_input_channels, 
-                      n_classes=n_output_classes, 
-                      device=device)
+    model = load_global_model(model_dir, file_paths.model_path_dict, device)
     
     # Prepare data
     train_data_filenames, test_data_filenames = prepare_data_splits()
@@ -233,24 +222,14 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
                          'Test Set - Post-transformer Confusion Matrix',
                          save_path=f"{output_dir}/test_cm_post.png" if output_dir else None)
     
-    # Visualize sample predictions
-    for X, X_bin, Y, mask in test_loader:
-        Y_pred_sample = test_pred[:len(Y.reshape(-1))].reshape(Y.shape)
-        Y_true_sample = test_labels[:len(Y.reshape(-1))].reshape(Y.shape)
-        
-        # visualize_predictions(X, Y_true_sample, Y_pred_sample, sample_idx=0,
-        #                     save_path=f"{output_dir}/sample_prediction.png" if output_dir else None)
-        break
-    
     # Save results
     if save_results and output_dir:
         os.makedirs(output_dir, exist_ok=True)
         
         results = {
-            'model_path': model_path,
+            'model_path': model_dir + '/model.pth',
             'training_info_path': training_info_path,
             'training_config': training_info,
-            'model_type': model_type,
             'max_len': max_len,
             'n_output_classes': n_output_classes,
             'batch_size': batch_size,
@@ -287,7 +266,7 @@ def test_model(model_path, training_info_path=None, batch_size=None, save_result
 
 if __name__ == "__main__":
     # Testing parameters - now only need model path, everything else loaded from training_info
-    model_path = 'G:/Cellery/merry_submit/Sleep_stage_classifier/Global_classification/output/20250724172221/model.pth'
+    model_dir = file_paths.global_output_root + '20250724172221/'
     output_dir = './test_results'
 
     if not os.path.exists(output_dir):
@@ -295,8 +274,7 @@ if __name__ == "__main__":
     
     # Test the model using configuration from training
     results = test_model(
-        model_path=model_path,
-        training_info_path=None,  # Auto-inferred from model_path
+        model_dir=model_dir,
         batch_size=4096,
         save_results=True,
         output_dir=output_dir
