@@ -77,10 +77,12 @@ def plot_confusion_matrix(y_true, y_pred, title, normalize=False, save_path=None
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         cm = np.round(cm, 2)
     
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, cmap='Blues', fmt='g' if not normalize else '.2f')
+    plt.figure(figsize=(6, 6))
+    sns.heatmap(cm, annot=True, cmap='Blues', fmt='g' if not normalize else '.2f', cbar=False)
     plt.xlabel('Predicted')
     plt.ylabel('True')
+    plt.xticks(ticks=[0.5, 1.5, 2.5, 3.5, 4.5], labels=['Wake', 'REM', 'N1', 'N2', 'N3'])
+    plt.yticks(ticks=[0.5, 1.5, 2.5, 3.5, 4.5], labels=['Wake', 'REM', 'N1', 'N2', 'N3'])
     plt.title(title)
     
     if save_path:

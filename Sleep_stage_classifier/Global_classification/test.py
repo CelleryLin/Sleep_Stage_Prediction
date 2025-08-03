@@ -188,14 +188,14 @@ def test_model(model_dir, training_info_path=None, batch_size=None, save_results
     train_metrics_org = calculate_metrics(train_labels, train_pred_org)
     print_metrics_summary(train_metrics_org, "Training Pre-transformer")
     plot_confusion_matrix(train_labels, train_pred_org, 
-                         'Training Set - Pre-transformer Confusion Matrix',
+                         'Training Set - Baseline Model',
                          save_path=f"{output_dir}/train_cm_pre.png" if output_dir else None)
     
     print('\nPost-transformer (Model Output) Results:')
     train_metrics_post = calculate_metrics(train_labels, train_pred)
     print_metrics_summary(train_metrics_post, "Training Post-transformer")
     plot_confusion_matrix(train_labels, train_pred, 
-                         'Training Set - Post-transformer Confusion Matrix',
+                         'Training Set - Global Classifier',
                          save_path=f"{output_dir}/train_cm_post.png" if output_dir else None)
     
     # Evaluate on test set
@@ -212,14 +212,14 @@ def test_model(model_dir, training_info_path=None, batch_size=None, save_results
     test_metrics_org = calculate_metrics(test_labels, test_pred_org)
     print_metrics_summary(test_metrics_org, "Test Pre-transformer")
     plot_confusion_matrix(test_labels, test_pred_org, 
-                         'Test Set - Pre-transformer Confusion Matrix',
+                         'Test Set - Baseline Model',
                          save_path=f"{output_dir}/test_cm_pre.png" if output_dir else None)
     
     print('\nPost-transformer (Model Output) Results:')
     test_metrics_post = calculate_metrics(test_labels, test_pred)
     print_metrics_summary(test_metrics_post, "Test Post-transformer")
     plot_confusion_matrix(test_labels, test_pred, 
-                         'Test Set - Post-transformer Confusion Matrix',
+                         'Test Set - Global Classifier',
                          save_path=f"{output_dir}/test_cm_post.png" if output_dir else None)
     
     # Save results
@@ -266,7 +266,7 @@ def test_model(model_dir, training_info_path=None, batch_size=None, save_results
 
 if __name__ == "__main__":
     # Testing parameters - now only need model path, everything else loaded from training_info
-    model_dir = file_paths.global_output_root + '20250724172221/'
+    model_dir = file_paths.global_output_root + '20250728155424/'
     output_dir = './test_results'
 
     if not os.path.exists(output_dir):

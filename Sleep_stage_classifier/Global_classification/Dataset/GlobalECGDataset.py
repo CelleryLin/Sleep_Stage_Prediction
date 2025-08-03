@@ -34,6 +34,7 @@ class GlobalECGDataset(Dataset):
             self.stage_pred = cache_data['stage_pred']
             self.stage_pred_proba = cache_data['stage_pred_proba']
             self.gt = cache_data['gt']
+            self.mask = cache_data['mask']
         else:
             print(f"Cache not found. Processing data...")
             all_time_series, all_stages = load_data(data_base_dir, filename_list)
@@ -42,23 +43,33 @@ class GlobalECGDataset(Dataset):
             self.stage_pred = [s[0] for s in epoc]
             self.stage_pred_proba = [s[1] for s in epoc]
             self.gt = [s[::30] for s in all_stages]
+            self.mask = None
 
-            # windowing
-            self.stage_pred = self.windowing(self.stage_pred, self.max_len)
-            self.stage_pred_proba = self.windowing(self.stage_pred_proba, self.max_len)
-            self.gt = self.windowing(self.gt, self.max_len)
-
-            self.stage_pred_proba = [s for s in self.stage_pred_proba if len(s) >= self.max_len]
-            self.stage_pred = [s for s in self.stage_pred if len(s) >= self.max_len]
-            self.gt = [s for s in self.gt if len(s) >= self.max_len]
+            # windowing (if the length is more than max_len.)
+            # self.stage_pred = self.windowing(self.stage_pred, self.max_len)
+            # self.stage_pred_proba = self.windowing(self.stage_pred_proba, self.max_len)
+            # self.gt = self.windowing(self.gt, self.max_len)
             
+            # self.stage_pred_proba = [s for s in self.stage_pred_proba if len(s) >= self.max_len]
+            # self.stage_pred = [s for s in self.stage_pred if len(s) >= self.max_len]
+            # self.gt = [s for s in self.gt if len(s) >= self.max_len]
+            # --------------------------------------------------------
+
+            # Padding (if the length is less than max_len.)
+            self.stage_pred, _ = self.padding(self.stage_pred, self.max_len)
+            self.stage_pred_proba, self.mask = self.padding(self.stage_pred_proba, self.max_len)
+            self.gt, _ = self.padding(self.gt, self.max_len)
+            # --------------------------------------------------------
+            
+
             # Save to cache
             print(f"Saving to cache: {cache_filename}")
             np.savez(
                 cache_filename, 
                 stage_pred=self.stage_pred, 
                 stage_pred_proba=self.stage_pred_proba, 
-                gt=self.gt
+                gt=self.gt,
+                mask=self.mask
             )
 
 
@@ -69,8 +80,9 @@ class GlobalECGDataset(Dataset):
         stage_pred_proba = np.array(self.stage_pred_proba[idx])
         stage_pred = np.array(self.stage_pred[idx])
         gt = np.array(self.gt[idx])
+        mask = np.array(self.mask[idx]) if self.mask is not None else torch.ones_like(gt)
 
-        return stage_pred_proba, stage_pred, gt, None
+        return stage_pred_proba, stage_pred, gt, mask
     
     def windowing(self, time_series, max_len):
         """
@@ -95,7 +107,6 @@ class GlobalECGDataset(Dataset):
             all_window.extend(windows)
         
         return all_window
-
 
     def get_epoch(self, time_series):
         full_epochs_num = time_series.shape[0] // self.fs // self.epoch_len
@@ -123,7 +134,6 @@ class GlobalECGDataset(Dataset):
 
         return pred.T, pred_proba.T
 
-
     def predict_window(self, time_series, time_pos):
         time_series = torch.tensor(time_series).to(device).float()
         time_pos = torch.tensor(time_pos).to(device).float()
@@ -143,20 +153,35 @@ class GlobalECGDataset(Dataset):
         return pred, pred_proba
     
     @staticmethod
-    def padding(s, max_len):
+    def padding(time_series, max_len):
         """
         Padding 0 to the end of the time series
         s: 1D time series
         """
-        s = np.array(s)
-        flag = 0
-        padded = np.concatenate([s, [flag] * (max_len - len(s))])
+        outputs = []
+        masks = []
+        for s in time_series:
+            if len(s) >= max_len:
+                outputs.append(s[:max_len])
+                masks.append(np.ones(max_len))
+                continue
 
-        # mask
-        mask = np.zeros(max_len)
-        mask[:len(s)] = 1
+            s = np.array(s)
+            if len(s.shape) == 2:
+                padded = np.zeros((max_len, s.shape[1]))
+                padded[:s.shape[0], :] = s
+            else:
+                padded = np.zeros(max_len)
+                padded[:s.shape[0]] = s
 
-        return padded, mask
+            # mask
+            mask = np.zeros(max_len)
+            mask[s.shape[0]] = 1
+
+            outputs.append(padded)
+            masks.append(mask)
+
+        return np.array(outputs), np.array(masks)
 
 def custom_collate_fn(batch):
     """
@@ -169,6 +194,6 @@ def custom_collate_fn(batch):
     stage_preds_proba = torch.FloatTensor(np.stack(stage_preds_proba))
     stage_preds = torch.FloatTensor(np.stack(stage_preds))
     gts = torch.FloatTensor(np.stack(gts))
-    # masks = torch.FloatTensor(np.stack(masks))
+    masks = torch.FloatTensor(np.stack(masks))
 
-    return stage_preds_proba, stage_preds, gts, torch.ones_like(gts)
+    return stage_preds_proba, stage_preds, gts, masks

@@ -15,7 +15,7 @@ The system classifies sleep into five stages:
 
 Our approach leverages the correlation between heart rate variability and sleep stages, using a hierarchical classification system that combines:
 1. **Local Classification**: Analyzes short, windowed **ECG rate-level** signal, with sampling rate of 128, to make initial predictions.
-2. **Global Classification**: Considers the broader stage-level sequence, with sampling rate of 1/30, across the entire sleep session to refine predictions.
+2. **Global Classification**: Considers the broader **stage-level** sequence, with sampling rate of 1/30, across the entire sleep session to refine predictions.
 
 ## Methodology
 
@@ -80,16 +80,40 @@ The complete pipeline should be executed in the following order:
 1. Data Preprocessing
 2. Local Classification Training
 3. Global Classification Training
-4. Inference Pipeline
 
 For detailed instructions on each component, please refer to the README files in the respective subdirectories:
 - [Preprocessing Pipeline](Preprocessing/README.md)
 - [Sleep Stage Classifier](Sleep_stage_classifier/README.md)
-- [Inference Pipeline](Inference_pipeline/README.md)
 
 ## Results
+### Local Classification
+The (01000) and (11100) classifiers achieve relatively strong performance, indicating these broader distinctions are easier to learn. In contrast, the (1n0nn) classifier shows low MCC despite high accuracy,
+suggesting difficulty in detecting subtle transitions. The (nnn10) classifier performs moderately, reflecting the challenge of distinguishing between similar sleep stages.
 
-<!-- Insert your results here, including performance metrics, visualizations, etc. -->
+| Local Classifier |  MCC  |  ACC  | Sensitivity |
+|------------------|-------|-------|-------------|
+| 01000            | 0.503 | 0.873 | 0.779       |
+| 11100            | 0.435 | 0.869 | 0.816       |
+| 1n0nn            | 0.145 | 0.922 | 0.679       |
+| nnn10            | 0.433 | 0.719 | 0.717       |
+
+### Global Classification
+We compares the performance of the proposed global classifier with a baseline model on both training and testing datasets. The baseline model (Figure 6), which simply ensembles the four local classifiers using a binary decision tree, performs poorly—achieving an MCC of only 0.092 and an accuracy of 0.172 on the test set. In contrast, the global classifier, which integrates local predictions using a deep learning–based approach, significantly improves performance, achieving 0.851 in accuracy and 0.780 in MCC. These results demonstrate that the proposed global model generalizes better and captures more robust representations than the simple
+tree-based ensemble.
+
+| Class | Sensitivity | Precision |
+|-------|-------------|-----------|
+| Wake  | 0.958       | 0.981     |
+| REM   | 0.756       | 0.660     |
+| N1    | 0.180       | 0.325     |
+| N2    | 0.857       | 0.812     |
+| N3    | 0.087       | 0.535     |
+
+**Overall Accuracy**: 0.851  
+**Overall MCC**: 0.780
+
+![](./img/global_test_results/test_cm_post.png)
+
 
 ## Future Work
 - Cross validation are not applied in this project, our results may lose some robustness.

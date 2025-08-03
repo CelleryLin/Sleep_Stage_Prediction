@@ -27,7 +27,7 @@ from stage_code_cvt import stage_code_global
 
 
 def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-4, 
-                max_len=200, val_split=0.2):
+                weight_decay=1e-5, max_len=200, val_split=0.2):
     """
     Train the ResNet/UNet global classification model.
     
@@ -113,7 +113,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     # Loss and optimizer
     # loss_module = torch.nn.BCELoss()
     loss_module = FocalLoss()
-    optimizer = torch.optim.RAdam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.RAdam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # Training loop
     all_train_losses = []
@@ -137,6 +137,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
 
             # Forward pass (reshape X for model input)
             pred = model(X.permute(0, 2, 1))  # Reshape from (B, L, C) to (B, C, L)
+            print(pred)
             loss = loss_module(pred, Y_onehot)
 
             # Backward pass
@@ -197,11 +198,12 @@ if __name__ == "__main__":
     # Training parameters
     model, training_info = train_model(
         model_type='unet',  # 'resnet' or 'unet'
-        epochs=30,
+        epochs=400,
         batch_size=1024,
-        learning_rate=1e-4,
-        max_len=200,
-        val_split=0.2
+        learning_rate=5e-4,
+        weight_decay=1e-5,
+        max_len=2000,
+        val_split=0.1
     )
 
     print(f"Training completed. Model saved in: {file_paths.global_output_root}")
