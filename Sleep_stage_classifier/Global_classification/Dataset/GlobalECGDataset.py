@@ -11,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class GlobalECGDataset(Dataset):
 
-    def __init__(self, data_base_dir, filename_list, model_path_dict, m=5, fs=1, epoch_len=30, max_len=2000, ds='train'):
+    def __init__(self, data_base_dir, filename_list, local_model_path_dict, m=5, fs=1, epoch_len=30, max_len=2000, ds='train'):
 
         self.m = m
         self.fs = fs
@@ -19,7 +19,7 @@ class GlobalECGDataset(Dataset):
         self.max_len = max_len
 
         self.models, self.training_infos, self.test_resultses = \
-            load_local_model(model_path_dict)
+            load_local_model(local_model_path_dict)
         
         # Create a cache filename based on the input parameters
         cache_dir = './cache'

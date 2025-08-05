@@ -11,12 +11,8 @@ The preprocessing pipeline transforms raw ECG and sleep stage data into a format
 Before running the preprocessing pipeline, ensure you have:
 
 1. **Raw data files** properly organized in the data directory structure (See [Raw Data Structure](#Raw-Data-Structure))
-2. **Required Python packages** installed:
-    ```bash
-    pip install -r requirements.txt
-    ```
 
-3. **Data directory structure** as specified in `_utils/file_paths.py`:
+2. **Data directory structure** as specified in `_utils/file_paths.py`:
     ```
     data_root = 'path/to/ECG and Stage Data/'
     table_data_root = 'path/to/tabular Data/'
@@ -69,7 +65,7 @@ table_data_root/
 
 ### Step 1: Generate Patient Lookup Table
 
-**Run script:** `gen_patient_lut.py`
+**Run script:** `./src/gen_patient_lut.py`
 
 **Purpose:** Creates a patient lookup table (LUT) that maps patient names to their corresponding ECG, stage, and clinical data files.
 
@@ -91,7 +87,7 @@ table_data_root/
 
 ### Step 2: Collect Stage and ECG Data
 
-**Run script:** `data_collecting.py`
+**Run script:** `./src/data_collecting.py`
 
 **Purpose:** Aligns ECG signals with sleep stage annotations and extracts heart rate features.
 
@@ -138,9 +134,9 @@ table_data_root/
 
 ### Step 3: Create Classification Dataset
 
-**Run script:** `make_dataset.py`
+**Run script:** `./src/make_dataset.py`
 
-**Purpose:** Transforms the combined data into windowed signal suitable for machine learning models. We uses multiple epochs to predict the central epoch's sleep stage. For example, For `m`=5, `Stage_n` is predicted from BPM series of `[epoch_n-2, epoch_n-1, epoch_n, epoch_n+1, epoch_n+2]`.
+**Purpose:** Transforms the combined data into windowed signal suitable for local models. We uses multiple epochs to predict the central epoch's sleep stage. For example, For `m`=5, `Stage_n` is predicted from BPM series of `[epoch_n-2, epoch_n-1, epoch_n, epoch_n+1, epoch_n+2]`.
 
 **Input:**
 - Combined .npz files from Step 2
@@ -207,8 +203,5 @@ flowchart TD
     H@{ shape: text}
     style B fill:#FFF9C4
     style D fill:#FFF9C4
-    style F fill:#FFF9C4
-```
-le D fill:#FFF9C4
     style F fill:#FFF9C4
 ```

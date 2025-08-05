@@ -55,12 +55,12 @@ def load_data(data_base_dir, filename_list, stage_code=None):
     return all_time_series, all_stages
 
 
-def load_local_model(model_path_dict, device=None):
+def load_local_model(local_model_path_dict, device=None):
     """
     Load local classification models.
     
     Args:
-        model_path_dict: Dictionary mapping model keys to paths
+        local_model_path_dict: Dictionary mapping model keys to paths
         device: PyTorch device
         
     Returns:
@@ -76,7 +76,7 @@ def load_local_model(model_path_dict, device=None):
     training_infos = {}
     test_resultses = {}
     
-    for k, v in model_path_dict.items():
+    for k, v in local_model_path_dict.items():
         if not os.path.exists(v):
             raise ValueError(f"Model path {v} does not exist")
         
@@ -97,13 +97,13 @@ def load_local_model(model_path_dict, device=None):
     return models, training_infos, test_resultses
 
 
-def load_global_model(model_dir, model_path_dict=None, device=None):
+def load_global_model(model_dir, local_model_path_dict=None, device=None):
     """
     Load global classification model from checkpoint.
     
     Args:
         model_dir: Directory containing the saved model
-        model_path_dict: Dictionary of local model paths (for determining input channels)
+        local_model_path_dict: Dictionary of local model paths (for determining input channels)
         device: PyTorch device
         
     Returns:
@@ -116,8 +116,8 @@ def load_global_model(model_dir, model_path_dict=None, device=None):
     from Sleep_stage_classifier.Global_classification.Model.resnet50 import ResNet50, UNet
     import file_paths
     
-    if model_path_dict is None:
-        model_path_dict = file_paths.model_path_dict
+    if local_model_path_dict is None:
+        local_model_path_dict = file_paths.local_model_path_dict
     
     training_info_path = os.path.join(model_dir, 'training_info.npz')
     
@@ -131,7 +131,7 @@ def load_global_model(model_dir, model_path_dict=None, device=None):
     n_output_classes = training_info['n_output_classes'].item()
     
     # Determine number of input channels from model path dict
-    n_input_channels = len(model_path_dict)
+    n_input_channels = len(local_model_path_dict)
 
     # Initialize model
     if model_type.lower() == 'resnet':

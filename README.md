@@ -75,15 +75,26 @@ flowchart TB
 
 ## Usage
 
+### Prerequisites
+**Required Python packages** installed:
+```bash
+pip install -r requirements.txt
+```
+
+### Procedure
+
 The complete pipeline should be executed in the following order:
 
 1. Data Preprocessing
 2. Local Classification Training
 3. Global Classification Training
+4. Inference
 
 For detailed instructions on each component, please refer to the README files in the respective subdirectories:
-- [Preprocessing Pipeline](Preprocessing/README.md)
-- [Sleep Stage Classifier](Sleep_stage_classifier/README.md)
+
+- [Preprocessing Pipeline](Preprocessing/README.md): Prepares datasets for training local classifiers
+- [Sleep Stage Classifier](Sleep_stage_classifier/README.md): Contains training scripts and models for local and global classification
+- [Inference Pipeline](Inference_pipeline/README.md): Provides end-to-end inference and visualization of results
 
 ## Results
 ### Local Classification

@@ -1,4 +1,4 @@
-# Training Sleep Stage Classification
+# Training Sleep Stage Classifiers
 
 This directory contains the training scripts and models for sleep stage classification using ECG data. The classification system contains 2 stages: Local and Global classification, each with its own model architecture and training process.
 
@@ -10,13 +10,7 @@ The Sleep Stage Classification system uses processed ECG rate (BPM) data to pred
 
 ## Prerequisites
 
-Before running the classification models, ensure you have:
-
-1. **Preprocessed data** from the Preprocessing pipeline
-2. **Required Python packages** installed:
-    ```bash
-    pip install -r requirements.txt
-    ```
+Before running the classification models, ensure you have **Preprocessed data** from the Preprocessing pipeline.
 
 ## System Architecture
 
@@ -31,18 +25,6 @@ Before running the classification models, ensure you have:
 **Model Output:**
 - $Y \in [0, 1]$: Output probabilities for the central epoch.
 
-**Directory Structure:**
-```
-Local_classification/
-    ├── Dataset/
-    │   ├── ECGDataset.py - Dataset class for Local classification
-    │   └── load_data.py - Data loading and preprocessing
-    ├── Models/ - Contains model, loss, optimizers...
-    ├── train.py - Training script for ConvTran model
-    ├── test.py - Evaluation script for ConvTran model
-    └── output/ - Saved model weights and training/test info
-```
-
 ### Global Classification
 
 **Purpose:** Classify entire sleep records by analyzing stage-level sequences derived from local classifiers.
@@ -53,19 +35,6 @@ Local_classification/
 
 **Model Output:**
 - $Y \in [0, 1]^{M \times C}$: Output probabilities for each class (Wake, REM, NREM stages). $C$ is the number of classes. Typically, $C=N+1$.
-
-**Directory Structure:**
-```
-Global_classification/
-    ├── Dataset/
-    │   └── GlobalECGDataset.py - Dataset class for Global classification
-    ├── Model/
-    │   └── resnet50.py - ResNet50 model architecture
-    ├── _utils.py - Utility functions for data handling and visualization
-    ├── train.py - Training script for Global models
-    ├── test.py - Evaluation script for Global models
-    └── output/ - Saved model weights and training info
-```
 
 <!-- ### Ensemble Classification
 
@@ -93,8 +62,10 @@ We need to train 4 weak classifiers with the following binary tasks:
   4. **N2 vs. N3** → stage code: `nnn100`
 
 The procedure is as follows:
-1. Please prepare the corresponding datasets for each model using `make_dataset.py` in the `Preprocessing` step, by specifying the appropriate `stage_code` in `stage_code_cvt.py`.
+1. Head to the `Local_Classifier` directory.
+2. Please prepare the corresponding datasets for each model using `make_dataset.py` in the `../../Preprocessing/src` step, by specifying the appropriate `stage_code` in `../../stage_code_cvt.py`.
     ```python
+    # for nnn100
     stage_code = {
         '11': -1, # wake
         '12': -1, # REM
@@ -104,31 +75,33 @@ The procedure is as follows:
         '16': 0, # N4
     }
     ```
-2. Specify the `local_output_root` in `file_paths.py` to locate the output directory for the  local classification models.
-3. After generating the datasets, update the `local_clf_ds_path` in `file_paths.py`. Run this script to train each local classifier. The output model will be saved in the `output/` directory with a timestamp.
-4. Specify the desired model you have trained in `test.py`. **You have to test local classifiers before training global classifier.**
+3. Specify the `local_output_root` in `../../file_paths.py` to locate the output directory for the  local classification models.
+4. After generating the datasets, update the `local_clf_ds_path` in `../../file_paths.py`. Run `train.py` to train each local classifier. The output model will be saved in the `output/` directory with a timestamp.
+5. Specify the desired model you have trained in `test.py`. Run `test.py` **You have to test local classifiers before training global classifier.**
     ```python
+    # in test.py
     model_root = file_paths.local_output_root + '{desired model folder}/'
     ```
-5. Repeat steps 1-4 for each of the 4 local classifiers, ensuring the `stage_code` is set appropriately for each task.
+6. Repeat steps 1-4 for each of the 4 local classifiers, ensuring the `stage_code` is set appropriately for each task.
 
 ### 3. Global Classification Training
 After training the local classifiers, you can train the global classifier
-1. Specify 4 models in `file_paths.py` under `model_path_dict` with the corresponding local model paths.
-2. Ensure `stage_code_global` in `stage_code_cvt.py` is set appropriately.
-    ```python
-     stage_code_global = {
-         '11': 0, # wake
-         '12': 1, # REM
-         '13': 2, # N1
-         '14': 3, # N2
-         '15': 4, # N3
-         '16': 4, # N4
-     }
-    ```
-3. Specify the `global_output_root` in `file_paths.py` to locate the output directory for the global classification models.
-4. Run `train.py` to train the global classifier. The output model will be saved in the `output/` directory with a timestamp.
-5. Specify the `model_path` in `test.py` to the trained global model path. Run this script to evaluate the global classifier.
+1. Head to the `Global_Classifier` directory.
+2. Specify 4 models in `../../file_paths.py` under `local_model_path_dict` with the corresponding local model paths.
+3. Ensure `stage_code_global` in `stage_code_cvt.py` is set appropriately.
+  ```python
+  stage_code_global = {
+    '11': 0, # wake
+    '12': 1, # REM
+    '13': 2, # N1
+    '14': 3, # N2
+    '15': 4, # N3
+    '16': 4, # N4
+  }
+  ```
+4. Specify the `global_output_root` in `../../file_paths.py` to locate the output directory for the global classification models.
+5. Run `train.py` to train the global classifier. The output model will be saved in the `output/` directory with a timestamp.
+6. Specify the `global_model_path` in `../../file_paths.py` to the trained global model path. Run `test.py` to evaluate the global classifier.
 
 ## Data Flow
 
@@ -184,5 +157,3 @@ flowchart LR
     style n8 fill:#FFF9C4
 
 ```
-
-## Evaluation

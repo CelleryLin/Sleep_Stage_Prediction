@@ -32,7 +32,7 @@ import file_paths
 from EnsembledDecoder import build_decoder_tree
 
 decoder = build_decoder_tree(
-    encoding_list=list(file_paths.model_path_dict.keys()),
+    encoding_list=list(file_paths.local_model_path_dict.keys()),
     class_labels=[0,1,2,3,4,4],
 )
 
@@ -128,7 +128,7 @@ def test_model(model_dir, training_info_path=None, batch_size=None, save_results
         batch_size = training_info['batch_size']
     
     # Load model using utility function with correct parameters
-    model = load_global_model(model_dir, file_paths.model_path_dict, device)
+    model = load_global_model(model_dir, file_paths.local_model_path_dict, device)
     
     # Prepare data
     train_data_filenames, test_data_filenames = prepare_data_splits()
@@ -138,14 +138,14 @@ def test_model(model_dir, training_info_path=None, batch_size=None, save_results
     train_dataset = GlobalECGDataset(
         data_base_dir,
         train_data_filenames,
-        model_path_dict=file_paths.model_path_dict,
+        local_model_path_dict=file_paths.local_model_path_dict,
         max_len=max_len
     )
 
     test_dataset = GlobalECGDataset(
         data_base_dir,
         test_data_filenames,
-        model_path_dict=file_paths.model_path_dict,
+        local_model_path_dict=file_paths.local_model_path_dict,
         max_len=max_len,
         ds='test'
     )
@@ -265,8 +265,6 @@ def test_model(model_dir, training_info_path=None, batch_size=None, save_results
 
 
 if __name__ == "__main__":
-    # Testing parameters - now only need model path, everything else loaded from training_info
-    model_dir = file_paths.global_output_root + '20250728155424/'
     output_dir = './test_results'
 
     if not os.path.exists(output_dir):
@@ -274,7 +272,7 @@ if __name__ == "__main__":
     
     # Test the model using configuration from training
     results = test_model(
-        model_dir=model_dir,
+        model_dir=file_paths.global_model_path,
         batch_size=4096,
         save_results=True,
         output_dir=output_dir

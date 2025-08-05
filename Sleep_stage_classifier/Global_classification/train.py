@@ -55,7 +55,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     train_dataset = GlobalECGDataset(
         data_base_dir,
         train_data_filenames,
-        model_path_dict=file_paths.model_path_dict,
+        local_model_path_dict=file_paths.local_model_path_dict,
         max_len=max_len,
         ds='train'
     )
@@ -63,7 +63,7 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     test_dataset = GlobalECGDataset(
         data_base_dir,
         test_data_filenames,
-        model_path_dict=file_paths.model_path_dict,
+        local_model_path_dict=file_paths.local_model_path_dict,
         max_len=max_len,
         ds='test'
     )
@@ -100,10 +100,10 @@ def train_model(model_type='unet', epochs=500, batch_size=128, learning_rate=1e-
     # Initialize model
     if model_type.lower() == 'resnet':  # for binary classification
         n_output_classes = 300
-        model = ResNet50(in_channels=len(file_paths.model_path_dict), classes=n_output_classes).to(device)
+        model = ResNet50(in_channels=len(file_paths.local_model_path_dict), classes=n_output_classes).to(device)
     elif model_type.lower() == 'unet':
         n_output_classes = len(set(stage_code_global.values()))
-        model = UNet(n_channels=len(file_paths.model_path_dict), n_classes=n_output_classes, bilinear=True).to(device)
+        model = UNet(n_channels=len(file_paths.local_model_path_dict), n_classes=n_output_classes, bilinear=True).to(device)
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
     
